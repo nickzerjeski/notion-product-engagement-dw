@@ -1,0 +1,142 @@
+-- ==========================================================
+-- NOTION DW: Product Usage & Engagement (Star Schema)
+-- Dialect: PostgreSQL
+-- ==========================================================
+
+CREATE SCHEMA IF NOT EXISTS notion_dw;
+SET search_path = notion_dw;
+
+-- -------------------------
+-- DIMENSIONS
+-- -------------------------
+
+CREATE TABLE IF NOT EXISTS dim_time (
+  time_key                INT PRIMARY KEY,
+  calendar_date           DATE NOT NULL,
+  day_of_week             SMALLINT,
+  is_weekend              BOOLEAN,
+  week_of_year            SMALLINT,
+  month                   SMALLINT,
+  quarter                 SMALLINT,
+  year                    SMALLINT,
+  day_since_signup_bucket SMALLINT
+);
+
+CREATE TABLE IF NOT EXISTS dim_user (
+  user_key           INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  user_id_nat        VARCHAR(64) NOT NULL UNIQUE,
+  signup_date        DATE,
+  subscription_tier  VARCHAR(32),
+  user_type          VARCHAR(32),
+  region             VARCHAR(64),
+  lifecycle_stage    VARCHAR(32)
+);
+
+CREATE TABLE IF NOT EXISTS dim_workspace (
+  workspace_key         INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  workspace_id_nat      VARCHAR(64) NOT NULL UNIQUE,
+  workspace_plan        VARCHAR(32),
+  workspace_size_bucket VARCHAR(32),
+  industry_segment      VARCHAR(64),
+  workspace_region      VARCHAR(64)
+);
+
+CREATE TABLE IF NOT EXISTS dim_content (
+  content_key        INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  content_id_nat     VARCHAR(64) NOT NULL UNIQUE,
+  content_type       VARCHAR(32),
+  is_template_based  BOOLEAN,
+  is_shared          BOOLEAN,
+  ownership_type     VARCHAR(32)
+);
+
+CREATE TABLE IF NOT EXISTS dim_device (
+  device_key         INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  device_id_nat      VARCHAR(64) NOT NULL UNIQUE,
+  platform           VARCHAR(32),
+  operating_system   VARCHAR(32),
+  app_version        VARCHAR(32),
+  device_form_factor VARCHAR(32)
+);
+
+CREATE TABLE IF NOT EXISTS dim_event (
+  event_key          INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  event_type         VARCHAR(32),
+  feature_category   VARCHAR(64),
+  interaction_intent VARCHAR(64),
+  UNIQUE (event_type, feature_category, interaction_intent)
+);
+
+CREATE TABLE IF NOT EXISTS dim_session (
+  session_key        INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  session_id_nat     VARCHAR(64) NOT NULL UNIQUE,
+  session_start_time TIMESTAMP,
+  session_end_time   TIMESTAMP,
+  session_origin     VARCHAR(64)
+);
+
+-- -------------------------
+-- FACT (partitioned by day)
+-- -------------------------
+
+CREATE TABLE IF NOT EXISTS fact_product_usage_engagement (
+  usage_id                 BIGINT GENERATED ALWAYS AS IDENTITY,
+  time_key                 INT NOT NULL,
+  user_key                 INT NOT NULL,
+  workspace_key            INT NOT NULL,
+  content_key              INT NOT NULL,
+  device_key               INT NOT NULL,
+  event_key                INT NOT NULL,
+  session_key              INT NOT NULL,
+  event_count              SMALLINT NOT NULL,
+  active_user_flag         SMALLINT NOT NULL,
+  activation_event_flag    SMALLINT NOT NULL,
+  feature_usage_flag       SMALLINT NOT NULL,
+  collaboration_event_flag SMALLINT NOT NULL,
+  session_event_count      INT,
+  session_duration_sec     INT,
+  PRIMARY KEY (usage_id, time_key),
+  CONSTRAINT fk_fact_time      FOREIGN KEY (time_key)      REFERENCES dim_time(time_key),
+  CONSTRAINT fk_fact_user      FOREIGN KEY (user_key)      REFERENCES dim_user(user_key),
+  CONSTRAINT fk_fact_workspace FOREIGN KEY (workspace_key) REFERENCES dim_workspace(workspace_key),
+  CONSTRAINT fk_fact_content   FOREIGN KEY (content_key)   REFERENCES dim_content(content_key),
+  CONSTRAINT fk_fact_device    FOREIGN KEY (device_key)    REFERENCES dim_device(device_key),
+  CONSTRAINT fk_fact_event     FOREIGN KEY (event_key)     REFERENCES dim_event(event_key),
+  CONSTRAINT fk_fact_session   FOREIGN KEY (session_key)   REFERENCES dim_session(session_key),
+  CONSTRAINT ck_event_count CHECK (event_count IN (0,1)),
+  CONSTRAINT ck_flags CHECK (
+    active_user_flag IN (0,1)
+    AND activation_event_flag IN (0,1)
+    AND feature_usage_flag IN (0,1)
+    AND collaboration_event_flag IN (0,1)
+  )
+) PARTITION BY RANGE (time_key);
+
+-- Example partitions for two years (daily time_key encoded as YYYYMMDD).
+-- Create only the required partitions in production via automation.
+-- Partition boundaries here are illustrative.
+CREATE TABLE IF NOT EXISTS fact_p_202501
+  PARTITION OF fact_product_usage_engagement
+  FOR VALUES FROM (20250101) TO (20250201);
+
+CREATE TABLE IF NOT EXISTS fact_p_202502
+  PARTITION OF fact_product_usage_engagement
+  FOR VALUES FROM (20250201) TO (20250301);
+
+-- -------------------------
+-- INDEXES (star join)
+-- -------------------------
+
+CREATE INDEX IF NOT EXISTS idx_fact_user      ON fact_product_usage_engagement (user_key);
+CREATE INDEX IF NOT EXISTS idx_fact_workspace ON fact_product_usage_engagement (workspace_key);
+CREATE INDEX IF NOT EXISTS idx_fact_content   ON fact_product_usage_engagement (content_key);
+CREATE INDEX IF NOT EXISTS idx_fact_device    ON fact_product_usage_engagement (device_key);
+CREATE INDEX IF NOT EXISTS idx_fact_event     ON fact_product_usage_engagement (event_key);
+CREATE INDEX IF NOT EXISTS idx_fact_session   ON fact_product_usage_engagement (session_key);
+CREATE INDEX IF NOT EXISTS idx_fact_time      ON fact_product_usage_engagement (time_key);
+
+CREATE INDEX IF NOT EXISTS idx_user_nat       ON dim_user (user_id_nat);
+CREATE INDEX IF NOT EXISTS idx_ws_nat         ON dim_workspace (workspace_id_nat);
+CREATE INDEX IF NOT EXISTS idx_content_nat    ON dim_content (content_id_nat);
+CREATE INDEX IF NOT EXISTS idx_device_nat     ON dim_device (device_id_nat);
+CREATE INDEX IF NOT EXISTS idx_session_nat    ON dim_session (session_id_nat);

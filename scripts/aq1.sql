@@ -1,0 +1,10 @@
+SET search_path = notion_dw;
+
+SELECT
+  c.content_type,
+  SUM(f.event_count) AS events,
+  DENSE_RANK() OVER (ORDER BY SUM(f.event_count) DESC) AS content_type_rank
+FROM fact_product_usage_engagement f
+JOIN dim_content c ON c.content_key = f.content_key
+GROUP BY c.content_type
+ORDER BY content_type_rank, c.content_type;
