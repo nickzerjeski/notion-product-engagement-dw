@@ -6,8 +6,8 @@ WITH monthly AS (
     SUM(f.active_user_flag) AS dau
   FROM fact_product_usage_engagement f
   JOIN dim_time t ON t.time_key = f.time_key
-  WHERE t.calendar_date >= DATE '2025-01-01'
-    AND t.calendar_date <  DATE '2025-03-01'
+  WHERE t.calendar_date >= DATE '2024-01-01'
+    AND t.calendar_date <  DATE '2026-01-01'
   GROUP BY DATE_TRUNC('month', t.calendar_date)
 ),
 with_prev AS (
