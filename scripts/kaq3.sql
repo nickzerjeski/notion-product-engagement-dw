@@ -1,4 +1,4 @@
--- Which content types generate the highest sustained interaction rates
+-- Activation rates of new users within their first 7 days (by signup month)
 
 SET search_path = notion_dw;
 

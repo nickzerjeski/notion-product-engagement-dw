@@ -5,22 +5,17 @@
 --
 -- GOAL
 --   Populate all dimension tables and the fact table with mock data
---   for the period 01.01.2024 .. 31.12.2024 (inclusive).
+--   that produces meaningful results for key analytical questions.
+--   Coverage spans 2024-01-01 through 2025-12-31 to support forward-looking analysis.
 --
--- TEMPORAL CONSISTENCY GUARANTEES
---   1) Fact event date >= user.signup_date
---   2) Fact event timestamp is sampled inside the chosen session window
---      (session_start_time <= event_ts <= session_end_time)
---   3) Chosen session_start_date >= user.signup_date
---   4) Session window is within 2024 and has start < end
---
--- REQUIRED MINIMUM SIZES
---   - >= 100 users
---   - >= 50 workspaces
---   - >= 50 sessions
---
--- FACT ROW COUNT
---   Set in params.target_rows (default: 60000)
+-- DESIGN NOTES (aligned to kaq1-5, aq1-2):
+--   - Structured signup cohorts across quarters to drive activation rates.
+--   - Tier-driven activity volumes (Enterprise > Business > Plus > Free).
+--   - Content mix biased toward databases/wikis/task boards for teams,
+--     and pages/templates for individuals.
+--   - Device mix with longer desktop sessions and shorter mobile sessions.
+--   - Collaboration flag more likely on wiki/task_board/comment/share events.
+--   - Explicit activation events in first 7 days post-signup for every user.
 -- ==========================================================
 
 SET search_path = notion_dw;
@@ -35,7 +30,7 @@ SET search_path = notion_dw;
 -- CASCADE;
 
 -- ==========================================================
--- (1) Ensure partitions for 2024 (monthly)
+-- (1) Ensure partitions for 2024-01 .. 2025-12 (monthly)
 --     Required because fact_product_usage_engagement is PARTITION BY RANGE(time_key)
 -- ==========================================================
 DO $$
@@ -48,7 +43,7 @@ DECLARE
 BEGIN
   m_start := DATE '2024-01-01';
 
-  WHILE m_start <= DATE '2024-12-01' LOOP
+  WHILE m_start <= DATE '2025-12-01' LOOP
     m_end := (m_start + INTERVAL '1 month')::DATE;
 
     p_from := (EXTRACT(YEAR FROM m_start)::INT * 10000
@@ -71,7 +66,7 @@ BEGIN
 END $$;
 
 -- ==========================================================
--- (2) TIME DIMENSION: 2024-01-01 .. 2024-12-31
+-- (2) TIME DIMENSION: 2024-01-01 .. 2025-12-31
 -- ==========================================================
 INSERT INTO dim_time (
   time_key, calendar_date, day_of_week, is_weekend,
@@ -86,10 +81,10 @@ SELECT
   (EXTRACT(ISODOW FROM d) IN (6,7)) AS is_weekend,
   EXTRACT(WEEK FROM d)::SMALLINT AS week_of_year,
   EXTRACT(MONTH FROM d)::SMALLINT AS month,
-  EXTRACT(QUARTER FROM d)::SMALLINT AS quarter,
-  EXTRACT(YEAR FROM d)::SMALLINT AS year,
-  NULL::SMALLINT AS day_since_signup_bucket
-FROM generate_series(DATE '2024-01-01', DATE '2024-12-31', INTERVAL '1 day') AS g(d)
+   EXTRACT(QUARTER FROM d)::SMALLINT AS quarter,
+   EXTRACT(YEAR FROM d)::SMALLINT AS year,
+   NULL::SMALLINT AS day_since_signup_bucket
+FROM generate_series(DATE '2024-01-01', DATE '2025-12-31', INTERVAL '1 day') AS g(d)
 ON CONFLICT (time_key) DO NOTHING;
 
 -- ==========================================================
@@ -132,9 +127,9 @@ VALUES
 ON CONFLICT (event_type, feature_category, interaction_intent) DO NOTHING;
 
 -- ==========================================================
--- (6) USER DIMENSION: >= 100 users
---     IMPORTANT: signup_date restricted to 2024-01-01 .. 2024-11-30
---     so that users have time to generate events after signup in 2024.
+-- (6) USER DIMENSION: structured cohorts (200 users)
+--     - Cohort signup waves in Jan, Apr, Jul, Oct to drive activation metrics.
+--     - Tier mix spread evenly; lifecycle varied.
 -- ==========================================================
 INSERT INTO dim_user (
   user_id_nat, signup_date, subscription_tier,
@@ -142,12 +137,17 @@ INSERT INTO dim_user (
 )
 SELECT
   'usr_' || LPAD(i::TEXT, 4, '0') AS user_id_nat,
-  DATE '2024-01-01' + ((random() * 334)::INT) AS signup_date, -- up to 2024-11-30
-  (ARRAY['Free','Plus','Business','Enterprise'])[1 + (random()*3)::INT] AS subscription_tier,
-  (ARRAY['individual','member','guest'])[1 + (random()*2)::INT] AS user_type,
-  (ARRAY['EU','NA','APAC'])[1 + (random()*2)::INT] AS region,
-  (ARRAY['onboarding','active','active','dormant'])[1 + (random()*3)::INT] AS lifecycle_stage
-FROM generate_series(1,100) i
+  CASE
+    WHEN i <= 50  THEN DATE '2024-01-05' + (i % 20)
+    WHEN i <= 100 THEN DATE '2024-04-05' + (i % 25)
+    WHEN i <= 150 THEN DATE '2024-07-05' + (i % 25)
+    ELSE               DATE '2024-10-05' + (i % 25)
+  END AS signup_date,
+  (ARRAY['Free','Plus','Business','Enterprise'])[(i % 4) + 1] AS subscription_tier,
+  (ARRAY['individual','member','guest'])[(i % 3) + 1] AS user_type,
+  (ARRAY['EU','NA','APAC'])[(i % 3) + 1] AS region,
+  (ARRAY['onboarding','active','active','dormant'])[(i % 4) + 1] AS lifecycle_stage
+FROM generate_series(1,200) i
 ON CONFLICT (user_id_nat) DO NOTHING;
 
 -- ==========================================================
@@ -167,84 +167,165 @@ FROM generate_series(1,50) i
 ON CONFLICT (workspace_id_nat) DO NOTHING;
 
 -- ==========================================================
--- (8) SESSION DIMENSION: >= 50 sessions
---     - session_start_time within 2024
---     - duration 5..65 minutes
---     - session_end_time capped at end of 2024
+-- (8) SESSION DIMENSION: dense coverage (5 sessions per day)
+--     - session_start_time within 2024-01-01 .. 2025-12-31
+--     - duration 20..70 minutes
 -- ==========================================================
 INSERT INTO dim_session (
   session_id_nat, session_start_time, session_end_time, session_origin
 )
 SELECT
-  'sess_' || LPAD(i::TEXT, 4, '0') AS session_id_nat,
+  'sess_' || LPAD(i::TEXT, 5, '0') AS session_id_nat,
   ts AS session_start_time,
   LEAST(
-    ts + ((300 + random()*3600)::INT || ' seconds')::INTERVAL,
-    TIMESTAMP '2024-12-31 23:59:59'
+    ts + ((1200 + random()*3000)::INT || ' seconds')::INTERVAL,
+    TIMESTAMP '2025-12-31 23:59:59'
   ) AS session_end_time,
   (ARRAY['direct','link','notification'])[1 + (random()*2)::INT] AS session_origin
 FROM (
   SELECT
     i,
     (TIMESTAMP '2024-01-01'
-     + (random() * INTERVAL '365 days')
-     + (random() * INTERVAL '24 hours')) AS ts
-  FROM generate_series(1,50) i
+     + ((i / 5)::INT || ' days')::INTERVAL  -- walk the calendar
+     + (random() * INTERVAL '12 hours')) AS ts
+  FROM generate_series(0, (731*5)) i  -- ~5 sessions per day across full range
 ) s
 ON CONFLICT (session_id_nat) DO NOTHING;
 
 -- ==========================================================
--- (9) FACT TABLE: EXACT N events with temporal consistency
---     - N defined in params.target_rows
+-- (9) FACT TABLE: Structured activity (activation + ongoing engagement)
+--     - Activation events: 3 per user within 7 days of signup.
+--     - Ongoing events: tier-weighted monthly volume with content/device bias.
 -- ==========================================================
-WITH params AS (
-  SELECT 60000::INT AS target_rows
+WITH months AS (
+  SELECT date_trunc('month', d)::date AS month_start
+  FROM generate_series(DATE '2024-01-01', DATE '2025-12-01', INTERVAL '1 month') d
 ),
-rows AS (
-  SELECT generate_series(1, (SELECT target_rows FROM params)) AS rn
+month_spans AS (
+  SELECT
+    month_start,
+    (month_start + INTERVAL '1 month' - INTERVAL '1 day')::date AS month_end
+  FROM months
 ),
-picked AS (
+user_profile AS (
   SELECT
     u.user_key,
     u.signup_date,
-
-    s.session_key,
-    s.session_start_time,
-    s.session_end_time,
-
-    (s.session_start_time + (random() * (s.session_end_time - s.session_start_time))) AS event_ts,
-
-    w.workspace_key,
-    c.content_key,
-    d.device_key,
-    e.event_key
-  FROM rows r
-  CROSS JOIN LATERAL (
-    SELECT *
-    FROM dim_user
-    ORDER BY random()
-    LIMIT 1
-  ) u
-  CROSS JOIN LATERAL (
-    SELECT *
-    FROM dim_session s
-    WHERE s.session_start_time::date >= u.signup_date
-      AND s.session_start_time::date <= DATE '2024-12-31'
-    ORDER BY random()
-    LIMIT 1
-  ) s
-  CROSS JOIN LATERAL (SELECT workspace_key FROM dim_workspace ORDER BY random() LIMIT 1) w
-  CROSS JOIN LATERAL (SELECT content_key   FROM dim_content   ORDER BY random() LIMIT 1) c
-  CROSS JOIN LATERAL (SELECT device_key    FROM dim_device    ORDER BY random() LIMIT 1) d
-  CROSS JOIN LATERAL (SELECT event_key     FROM dim_event     ORDER BY random() LIMIT 1) e
+    u.subscription_tier,
+    CASE u.subscription_tier
+      WHEN 'Free'       THEN 6
+      WHEN 'Plus'       THEN 10
+      WHEN 'Business'   THEN 16
+      ELSE                 20
+    END AS monthly_base,
+    CASE u.subscription_tier
+      WHEN 'Free'       THEN 0.55
+      WHEN 'Plus'       THEN 0.70
+      WHEN 'Business'   THEN 0.82
+      ELSE                 0.90
+    END AS activation_prob,
+    -- deterministic activation choice per user based on md5(user_id_nat)
+    (
+      (('x' || substr(md5(u.user_id_nat), 1, 8))::bit(32)::int % 100)::numeric / 100.0
+      < CASE u.subscription_tier
+          WHEN 'Free'       THEN 0.55
+          WHEN 'Plus'       THEN 0.70
+          WHEN 'Business'   THEN 0.82
+          ELSE                 0.90
+        END
+    ) AS activates
+  FROM dim_user u
 ),
-dated AS (
+activation_events AS (
   SELECT
-    p.*,
-    (p.event_ts)::date AS event_date
-  FROM picked p
-  WHERE (p.event_ts)::date BETWEEN DATE '2024-01-01' AND DATE '2024-12-31'
-    AND (p.event_ts)::date >= p.signup_date
+    up.user_key,
+    GREATEST(up.signup_date, DATE '2024-01-01') + (g-1) AS event_date,
+    'activation'::TEXT AS stage
+  FROM user_profile up
+  CROSS JOIN generate_series(1,3) g
+  WHERE up.activates
+    AND up.signup_date + (g-1) <= DATE '2025-12-31'
+),
+recurring_volume AS (
+  SELECT
+    up.user_key,
+    up.signup_date,
+    up.subscription_tier,
+    ms.month_start,
+    ms.month_end,
+    up.monthly_base
+      + (CASE WHEN up.subscription_tier IN ('Business','Enterprise') THEN 6 ELSE 0 END)
+      + (random()*4)::INT  AS monthly_events
+  FROM user_profile up
+  JOIN month_spans ms
+    ON ms.month_start >= date_trunc('month', up.signup_date)
+   AND ms.month_start <= DATE '2025-12-01'
+),
+recurring_events AS (
+  SELECT
+    rv.user_key,
+    rv.subscription_tier,
+    rv.signup_date,
+    rv.month_start,
+    rv.month_end,
+    rv.monthly_events,
+    generate_series(1, rv.monthly_events) AS idx
+  FROM recurring_volume rv
+),
+event_pool AS (
+  -- Merge activation and ongoing events into one set with event_date and attributes.
+  SELECT
+    e.user_key,
+    GREATEST(e.signup_date, e.month_start)
+      + ((random() * (e.month_end - GREATEST(e.signup_date, e.month_start)))::INT) AS event_date,
+    e.subscription_tier,
+    FALSE AS is_activation_stage
+  FROM recurring_events e
+  WHERE GREATEST(e.signup_date, e.month_start) <= e.month_end
+
+  UNION ALL
+
+  SELECT
+    a.user_key,
+    a.event_date,
+    up.subscription_tier,
+    TRUE AS is_activation_stage
+  FROM activation_events a
+  JOIN dim_user up ON up.user_key = a.user_key
+),
+event_enriched AS (
+  SELECT
+    ep.*,
+    (ep.event_date
+     + (random() * INTERVAL '20 hours')) AS event_ts,  -- spread across the day
+    -- Content mix: team spaces heavier on wikis/databases/task boards.
+    CASE
+      WHEN random() < 0.28 THEN 'cnt_database'
+      WHEN random() < 0.52 THEN 'cnt_wiki'
+      WHEN random() < 0.72 THEN 'cnt_taskboard'
+      WHEN random() < 0.88 THEN 'cnt_page'
+      ELSE                     'cnt_template'
+    END AS content_id_nat,
+    -- Device mix: desktop/web more common for work, mobile for lighter use.
+    CASE
+      WHEN random() < 0.35 THEN 'dev_desktop'
+      WHEN random() < 0.60 THEN 'dev_web_win'
+      WHEN random() < 0.75 THEN 'dev_web_mac'
+      WHEN random() < 0.88 THEN 'dev_ios'
+      ELSE                     'dev_android'
+    END AS device_id_nat,
+    -- Event mix: creation/collaboration weighted for richer engagement.
+    CASE
+      WHEN random() < 0.18 THEN 'create'
+      WHEN random() < 0.36 THEN 'edit'
+      WHEN random() < 0.48 THEN 'comment'
+      WHEN random() < 0.60 THEN 'share'
+      WHEN random() < 0.72 THEN 'db_query'
+      WHEN random() < 0.84 THEN 'template_use'
+      WHEN random() < 0.92 THEN 'api_call'
+      ELSE                     'view'
+    END AS event_type
+  FROM event_pool ep
 )
 INSERT INTO fact_product_usage_engagement (
   time_key,
@@ -264,24 +345,55 @@ INSERT INTO fact_product_usage_engagement (
 )
 SELECT
   t.time_key,
-  d.user_key,
-  d.workspace_key,
-  d.content_key,
+  ev.user_key,
+  w.workspace_key,
+  c.content_key,
   d.device_key,
-  d.event_key,
-  d.session_key,
+  e.event_key,
+  s.session_key,
   1 AS event_count,
-  CASE WHEN random() < 0.25 THEN 1 ELSE 0 END AS active_user_flag,
   CASE
-    WHEN d.event_date < (d.signup_date + INTERVAL '7 days') AND random() < 0.25 THEN 1
+    WHEN ev.is_activation_stage THEN 1
+    WHEN ((EXTRACT(DAY FROM ev.event_date))::INT % 5) = 0 THEN 1
+    ELSE 0
+  END AS active_user_flag,
+  CASE
+    WHEN ev.is_activation_stage THEN 1
+    WHEN ev.event_date < up.signup_date + INTERVAL '7 days'
+         AND random() < 0.20 THEN 1
     ELSE 0
   END AS activation_event_flag,
-  CASE WHEN random() < 0.30 THEN 1 ELSE 0 END AS feature_usage_flag,
-  CASE WHEN random() < 0.35 THEN 1 ELSE 0 END AS collaboration_event_flag,
-  (1 + random()*15)::INT AS session_event_count,
-  GREATEST(0, EXTRACT(EPOCH FROM (d.session_end_time - d.session_start_time))::INT) AS session_duration_sec
-FROM dated d
-JOIN dim_time t ON t.calendar_date = d.event_date;
+  CASE
+    WHEN e.event_type IN ('create','edit','db_query','template_use','api_call') THEN 1
+    WHEN random() < 0.20 THEN 1 ELSE 0
+  END AS feature_usage_flag,
+  CASE
+    WHEN e.event_type IN ('comment','share') THEN 1
+    WHEN c.content_type IN ('wiki','task_board','database') AND random() < 0.65 THEN 1
+    ELSE 0
+  END AS collaboration_event_flag,
+  GREATEST(2, 2 + (random()*12)::INT) AS session_event_count,
+  CASE d.platform
+    WHEN 'desktop' THEN 2400 + (random()*800)::INT
+    WHEN 'web'     THEN 1800 + (random()*600)::INT
+    ELSE                900 + (random()*500)::INT
+  END AS session_duration_sec
+FROM event_enriched ev
+JOIN user_profile up ON up.user_key = ev.user_key
+JOIN dim_time t      ON t.calendar_date = ev.event_date
+JOIN dim_content c   ON c.content_id_nat = ev.content_id_nat
+JOIN dim_device d    ON d.device_id_nat = ev.device_id_nat
+JOIN dim_event e     ON e.event_type = ev.event_type
+CROSS JOIN LATERAL (
+  SELECT workspace_key FROM dim_workspace ORDER BY random() LIMIT 1
+) w
+CROSS JOIN LATERAL (
+  SELECT session_key
+  FROM dim_session s
+  WHERE ev.event_date BETWEEN s.session_start_time::date AND s.session_end_time::date
+  ORDER BY random()
+  LIMIT 1
+) s;
 
 -- ==========================================================
 -- (10) Verification queries (run manually)
