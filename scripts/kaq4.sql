@@ -14,4 +14,3 @@ JOIN dim_time t    ON t.time_key = f.time_key
 JOIN dim_device d  ON d.device_key = f.device_key
 GROUP BY ROLLUP (t.year, t.month, d.platform)
 ORDER BY t.year NULLS LAST, t.month NULLS LAST, d.platform NULLS LAST;
-

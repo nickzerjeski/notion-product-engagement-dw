@@ -28,4 +28,3 @@ SELECT
 FROM base b
 JOIN totals t USING (year, month)
 ORDER BY b.year, b.month, b.work_mode;
-

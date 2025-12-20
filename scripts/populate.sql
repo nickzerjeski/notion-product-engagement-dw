@@ -15,7 +15,7 @@
 --     and pages/templates for individuals.
 --   - Device mix with longer desktop sessions and shorter mobile sessions.
 --   - Collaboration flag more likely on wiki/task_board/comment/share events.
---   - Explicit activation events in first 7 days post-signup for every user.
+--   - Activation attempts in first 7 days post-signup, tier-weighted, not guaranteed.
 -- ==========================================================
 
 SET search_path = notion_dw;
@@ -127,8 +127,8 @@ VALUES
 ON CONFLICT (event_type, feature_category, interaction_intent) DO NOTHING;
 
 -- ==========================================================
--- (6) USER DIMENSION: structured cohorts (200 users)
---     - Cohort signup waves in Jan, Apr, Jul, Oct to drive activation metrics.
+-- (6) USER DIMENSION: monthly cohorts (480 users)
+--     - 20 users per month from Jan 2024 through Dec 2025 (24 months).
 --     - Tier mix spread evenly; lifecycle varied.
 -- ==========================================================
 INSERT INTO dim_user (
@@ -137,17 +137,14 @@ INSERT INTO dim_user (
 )
 SELECT
   'usr_' || LPAD(i::TEXT, 4, '0') AS user_id_nat,
-  CASE
-    WHEN i <= 50  THEN DATE '2024-01-05' + (i % 20)
-    WHEN i <= 100 THEN DATE '2024-04-05' + (i % 25)
-    WHEN i <= 150 THEN DATE '2024-07-05' + (i % 25)
-    ELSE               DATE '2024-10-05' + (i % 25)
-  END AS signup_date,
+  (DATE '2024-01-05'
+   + (((i-1) / 20) * INTERVAL '1 month')
+   + ((i-1) % 20) * INTERVAL '1 day')::date AS signup_date,
   (ARRAY['Free','Plus','Business','Enterprise'])[(i % 4) + 1] AS subscription_tier,
   (ARRAY['individual','member','guest'])[(i % 3) + 1] AS user_type,
   (ARRAY['EU','NA','APAC'])[(i % 3) + 1] AS region,
   (ARRAY['onboarding','active','active','dormant'])[(i % 4) + 1] AS lifecycle_stage
-FROM generate_series(1,200) i
+FROM generate_series(1,480) i
 ON CONFLICT (user_id_nat) DO NOTHING;
 
 -- ==========================================================
@@ -194,7 +191,7 @@ ON CONFLICT (session_id_nat) DO NOTHING;
 
 -- ==========================================================
 -- (9) FACT TABLE: Structured activity (activation + ongoing engagement)
---     - Activation events: 3 per user within 7 days of signup.
+--     - Activation events: up to 2 per activating user within 7 days of signup.
 --     - Ongoing events: tier-weighted monthly volume with content/device bias.
 -- ==========================================================
 WITH months AS (
@@ -219,19 +216,19 @@ user_profile AS (
       ELSE                 20
     END AS monthly_base,
     CASE u.subscription_tier
-      WHEN 'Free'       THEN 0.55
-      WHEN 'Plus'       THEN 0.70
-      WHEN 'Business'   THEN 0.82
-      ELSE                 0.90
+      WHEN 'Free'       THEN 0.25
+      WHEN 'Plus'       THEN 0.40
+      WHEN 'Business'   THEN 0.55
+      ELSE                 0.70
     END AS activation_prob,
     -- deterministic activation choice per user based on md5(user_id_nat)
     (
       (('x' || substr(md5(u.user_id_nat), 1, 8))::bit(32)::int % 100)::numeric / 100.0
       < CASE u.subscription_tier
-          WHEN 'Free'       THEN 0.55
-          WHEN 'Plus'       THEN 0.70
-          WHEN 'Business'   THEN 0.82
-          ELSE                 0.90
+          WHEN 'Free'       THEN 0.25
+          WHEN 'Plus'       THEN 0.40
+          WHEN 'Business'   THEN 0.55
+          ELSE                 0.70
         END
     ) AS activates
   FROM dim_user u
@@ -242,7 +239,7 @@ activation_events AS (
     GREATEST(up.signup_date, DATE '2024-01-01') + (g-1) AS event_date,
     'activation'::TEXT AS stage
   FROM user_profile up
-  CROSS JOIN generate_series(1,3) g
+  CROSS JOIN generate_series(1,2) g
   WHERE up.activates
     AND up.signup_date + (g-1) <= DATE '2025-12-31'
 ),
@@ -359,8 +356,6 @@ SELECT
   END AS active_user_flag,
   CASE
     WHEN ev.is_activation_stage THEN 1
-    WHEN ev.event_date < up.signup_date + INTERVAL '7 days'
-         AND random() < 0.20 THEN 1
     ELSE 0
   END AS activation_event_flag,
   CASE

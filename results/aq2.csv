@@ -1,0 +1,3 @@
+"month_start","dau_current_month","dau_previous_month","abs_change","rel_change"
+"2025-01-01","1001",NULL,NULL,NULL
+"2025-02-01","968","1001","-33","-0.0330"
