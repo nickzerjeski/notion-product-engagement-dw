@@ -33,6 +33,7 @@
 \usepackage{pgfplots}
 \usepackage{pgfplotstable}
 \usetikzlibrary{arrows, calc, positioning, tikzmark, automata, arrows.meta, decorations.markings}
+\pgfplotsset{compat=1.18}
 \usepackage{titlesec}
 
 % Numbers
@@ -928,4 +929,7 @@ Finally, the fact table generation ties everything together. We compute an activ
 For each event we pick a date within the valid window, that is an event can only occur after a user created their account, attach biased mixes for content types, devices, and event types, and link the event to a workspace and a same-day session. The measure flags are set according to the type of event and content so that activation, feature usage, and collaboration metrics come out believable. This way the warehouse ends up with structured, meaningful mock data so we are ready to answer our key analytical questions. All scripts that answers those questions are provided in the appendix.
 
 For our first question, we wanted to know how the user engagement evolves over multiple tiers.
+
+\input{figures/kaq1}
+
 \end{document}
