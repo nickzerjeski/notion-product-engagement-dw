@@ -1,0 +1,25 @@
+\begin{table}[H]
+\centering
+\begin{tabular}{ll}
+\hline
+\textbf{Attribute} & \textbf{Key} \\
+\hline
+\texttt{usage\_id}            & Primary Key \\
+\texttt{time\_key}           & FK$\rightarrow$ \texttt{dim\_time(time\_key)} \\
+\texttt{user\_key}           & FK$\rightarrow$ \texttt{dim\_user(user\_key)} \\
+\texttt{workspace\_key}      & FK$\rightarrow$ \texttt{dim\_workspace(workspace\_key)} \\
+\texttt{content\_key}        & FK$\rightarrow$ \texttt{dim\_content(content\_key)} \\
+\texttt{device\_key}         & FK$\rightarrow$ \texttt{dim\_device(device\_key)} \\
+\texttt{event\_key}          & FK$\rightarrow$ \texttt{dim\_event(event\_key)} \\
+\texttt{session\_key}        & FK$\rightarrow$ \texttt{dim\_session(session\_key)} \\
+\texttt{event\_count}        &  \\
+\texttt{active\_user\_flag}  &  \\
+\texttt{activation\_event\_flag} &  \\
+\texttt{feature\_usage\_flag}    &  \\
+\texttt{collaboration\_event\_flag} &  \\
+\texttt{session\_event\_count}    &  \\
+\texttt{session\_duration\_sec}   &  \\
+\hline
+\end{tabular}
+\caption{Fact table \texttt{fact\_product\_usage\_engagement}.}
+\end{table}

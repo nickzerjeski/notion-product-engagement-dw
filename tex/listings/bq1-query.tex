@@ -1,0 +1,17 @@
+\begin{lstlisting}[language=SQL,caption={Query for answering: How does user engagement evolve over time across subsciption tiers?},label={lst:bq1},captionpos=b]
+SELECT
+    t.calendar_date,
+    u.subscription_tier,
+    SUM(f.event_count) AS total_events
+FROM fact_product_usage_engagement AS f
+JOIN dim_time AS t
+    ON f.time_key = t.time_key
+JOIN dim_user AS u
+    ON f.user_key = u.user_key
+GROUP BY
+    t.calendar_date,
+    u.subscription_tier
+ORDER BY
+    t.calendar_date,
+    u.subscription_tier;
+\end{lstlisting}

@@ -1,0 +1,12 @@
+\begin{lstlisting}[language=SQL,caption={Query for answering: Which content types generate the highest interaction rates?},label={lst:bq2},captionpos=b]
+SELECT
+    c.content_type,
+    SUM(f.event_count) AS total_events
+FROM fact_product_usage_engagement AS f
+JOIN dim_content AS c
+    ON f.content_key = c.content_key
+GROUP BY
+    c.content_type
+ORDER BY
+    total_events DESC;
+\end{lstlisting}

@@ -1,0 +1,19 @@
+\begin{lstlisting}[language=SQL,caption={Snippet of the script for creating the Data Warehouse.},label={lst:cs1},captionpos=b]
+-- Creation of the user dimension
+CREATE TABLE IF NOT EXISTS dim_user (
+  user_key    INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  user_id_nat VARCHAR(64) NOT NULL UNIQUE,
+  signup_date DATE,
+  ...
+);
+
+-- Snippet of the fact table
+CREATE TABLE IF NOT EXISTS fact_product_usage_engagement (
+  usage_id    BIGINT GENERATED ALWAYS AS IDENTITY,
+  time_key    INT NOT NULL,
+  ...
+  PRIMARY KEY (usage_id, time_key),
+  CONSTRAINT fk_fact_user
+        FOREIGN KEY (user_key) REFERENCES dim_user(user_key),
+) PARTITION BY RANGE (time_key);
+\end{lstlisting}

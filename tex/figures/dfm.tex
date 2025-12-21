@@ -1,0 +1,230 @@
+\begin{figure}[ht]
+\centering
+\resizebox{\linewidth}{!}{%
+\begin{tikzpicture}[
+  font=\sffamily\footnotesize,
+  fact/.style={draw, rounded corners, thick, minimum width=40mm, minimum height=18mm, align=center},
+  attr/.style={draw, circle, minimum size=2.5mm, inner sep=0pt},
+  dimlbl/.style={fill=white, inner sep=1pt},
+  >=latex
+]
+
+%==================== FACT ====================
+\node[fact, draw, rounded corners=0, minimum width=0pt, inner sep=3pt] (F) {
+    \begin{tabular}{l}
+        \textbf{Product Usage \& Engagement} \\ \hline
+        Event\_count \\
+        Active\_user\_flag \\
+        Activation\_event\_flag \\
+        Feature\_usage\_flag \\
+        Collaboration\_event\_flag \\
+        Session\_event\_count \\
+        Session\_duration\_sec \\
+    \end{tabular}
+};
+
+%==================== TIME DIM ====================
+\node[attr,left=26mm of F] (time0) {};
+\node[dimlbl,above=2mm of time0] {Time};
+\draw[-,thick] (time0) -- (F.west);
+
+% Hierarchy: Date -> Week -> Month -> Quarter -> Year
+\node[attr,left=7mm of time0] (timeMonth) {};
+\node[below=0mm of timeMonth] {Month};
+\node[attr,left=7mm of timeMonth] (timeQuarter) {};
+\node[above=0mm of timeQuarter] {Quarter};
+\node[attr,left=7mm of timeQuarter] (timeYear) {};
+\node[left=0mm of timeYear] {Year};
+
+\draw[thick] (timeYear) -- (timeQuarter) -- (timeMonth) -- (time0);
+
+% Attributes attached to the Date level
+\node[attr,above right=2mm and 15mm of time0] (timeDoW) {};
+\node[above=0mm of timeDoW] {Week};
+\draw[thick] (time0) -- (timeDoW);
+
+\node[attr,above right=10mm and 12mm of time0] (week) {};
+\node[above=0mm of week] {Day of week};
+\draw[thick] (time0) -- (week);
+
+\node[attr,below right=5mm and 2mm of time0] (timeWeekend) {};
+\node[below=0mm of timeWeekend] {Weekend};
+\draw[thick] (time0) -- (timeWeekend);
+
+\node[attr,above left=6mm and 7mm of time0] (timeCalDate) {};
+\node[above=2mm of timeCalDate] {Calendar date};
+\draw[thick] (time0) -- (timeCalDate);
+
+\node[attr,below left=8mm and 4mm of time0] (timeSignupBucket) {};
+\node[below left=0mm of timeSignupBucket] {Days s. signup};
+\draw[thick] (time0) -- (timeSignupBucket);
+
+\node[attr,below right=3mm and 7mm of time0] (timeKey) {};
+\node[right=0mm of timeKey] {Date key};
+\draw[thick] (time0) -- (timeKey);
+
+%==================== USER DIM ==================== USER name
+\node[attr,above=18mm of F] (user0) {};
+\node[dimlbl,above=0mm of user0] {User};
+\draw[thick,-] (user0) -- (F.north);
+
+% signup_date
+\node[attr,above right=4mm and 10mm of user0] (userSignup) {};
+\node[right=0mm of userSignup] {signup\_date};
+\draw[thick] (user0) -- (userSignup);
+
+% subscription_tier
+\node[attr,right=12mm of user0] (userTier) {};
+\node[right=0mm of userTier] {subscription\_tier};
+\draw[thick] (user0) -- (userTier);
+
+% user_type
+\node[attr,below right=4mm and 10mm of user0] (userType) {};
+\node[right=0mm of userType] {user\_type};
+\draw[thick] (user0) -- (userType);
+
+% username
+\node[inner sep=0pt, minimum size=0pt, below left=4mm and 10mm of user0] (usernameHub) {};
+\draw[thick] (user0) -- (usernameHub);
+
+% left branch: username
+\coordinate (usernameLeft) at ($(usernameHub)+(-15mm,0mm)$);
+\draw[thick] ($(usernameHub)+(.1mm,0mm)$) -- (usernameLeft);
+\node[above right=0mm and 0mm of usernameLeft] {username};
+
+
+% region
+\node[attr,left=12mm of user0] (userRegion) {};
+\node[left=0mm of userRegion] {region};
+\draw[thick] (user0) -- (userRegion);
+
+% lifecycle_stage
+\node[attr,above left=4mm and 10mm of user0] (userLife) {};
+\node[left=0mm of userLife] {lifecycle\_stage};
+\draw[thick] (user0) -- (userLife);
+
+
+%==================== WORKSPACE DIM ====================
+\node[attr,right=26mm of F] (ws0) {};
+\node[dimlbl,above=1mm of ws0] {Workspace};
+\draw[thick,-] (ws0) -- (F.east);
+
+% subscription plan
+\node[attr,below right=1mm and 8mm of ws0] (wsPlan) {};
+\node[right=0mm of wsPlan] {workspace\_plan};
+\draw[thick] (ws0) -- (wsPlan);
+
+% size bucket
+\node[attr,below=5mm of wsPlan] (wsSize) {};
+\node[right=0mm of wsSize] {workspace\_size\_bucket};
+\draw[thick] (ws0) -- (wsSize);
+
+% industry segment (optional)
+\node[attr,below left=5mm and 2mm of ws0] (wsInd) {};
+\node[below left=0mm and -10mm of wsInd] {industry\_segment};
+\draw[thick] (ws0) -- (wsInd);
+% connection with optionality marker
+\draw[thick] (ws0) -- (wsInd);
+\path (ws0) -- (wsInd) coordinate[pos=0.3] (wsIndOpt);
+\draw[thick] ($(wsIndOpt)+(0,-2.2pt)$) -- ($(wsIndOpt)+(0,2.2pt)$);
+
+% geographic region
+\node[attr,above right=1mm and 8mm of ws0] (wsRegion) {};
+\node[right=0mm of wsRegion] {workspace\_region};
+\draw[thick] (ws0) -- (wsRegion);
+
+%==================== CONTENT DIM ==================== content name
+\node[attr,below left=16mm and 22mm of F] (cont0) {};
+\node[dimlbl,above left=2mm and -4mm of cont0] {Content};
+\draw[thick,-] (cont0) -- (F.south west);
+
+% content_type
+\node[attr,left=10mm of cont0] (contType) {};
+\node[left=0mm of contType] {content\_type};
+\draw[thick] (cont0) -- (contType);
+
+% is_template_based
+\node[attr,below left=4mm and 10mm of cont0] (contTemplate) {};
+\node[left=0mm of contTemplate] {is\_template\_based};
+\draw[thick] (cont0) -- (contTemplate);
+
+% is_shared
+\node[attr,below=5mm of cont0] (contShared) {};
+\node[below=0mm of contShared] {is\_shared};
+\draw[thick] (cont0) -- (contShared);
+
+% ownership_type
+\node[attr,below right=4mm and 10mm of cont0] (contOwner) {};
+\node[right=0mm of contOwner] {ownership\_type};
+\draw[thick] (cont0) -- (contOwner);
+
+%==================== DEVICE DIM ====================
+\node[attr,below right=16mm and 22mm of F] (dev0) {};
+\node[dimlbl,above=2mm of dev0] {Device};
+\draw[thick,-] (dev0) -- (F.south east);
+
+% platform
+\node[attr,right=12mm of dev0] (devPlatform) {};
+\node[right=0mm of devPlatform] {platform};
+\draw[thick] (dev0) -- (devPlatform);
+
+% operating_system
+\node[attr,below right=4mm and 10mm of dev0] (devOS) {};
+\node[right=0mm of devOS] {operating\_system};
+\draw[thick] (dev0) -- (devOS);
+
+% app_version
+\node[attr,below=5mm of dev0] (devVersion) {};
+\node[below=0mm of devVersion] {app\_version};
+\draw[thick] (dev0) -- (devVersion);
+
+% device_form_factor
+\node[attr,below left=4mm and 10mm of dev0] (devForm) {};
+\node[left=0mm of devForm] {device\_form\_factor};
+\draw[thick] (dev0) -- (devForm);
+
+%==================== EVENT DIM ====================
+\node[attr,above right=16mm and 22mm of F] (evt0) {};
+\node[dimlbl,above=1mm of evt0] {Event};
+\draw[thick,-] (evt0) -- (F.north east);
+
+% event_type
+\node[attr,above right=4mm and 10mm of evt0] (evtType) {};
+\node[right=0mm of evtType] {event\_type};
+\draw[thick] (evt0) -- (evtType);
+
+% feature_category
+\node[attr,right=12mm of evt0] (evtFeat) {};
+\node[right=0mm of evtFeat] {feature\_category};
+\draw[thick] (evt0) -- (evtFeat);
+
+% interaction_intent
+\node[attr,below right=4mm and 10mm of evt0] (evtIntent) {};
+\node[right=0mm of evtIntent] {interaction\_intent};
+\draw[thick] (evt0) -- (evtIntent);
+
+
+%==================== SESSION DIM ====================
+\node[attr,above left=16mm and 22mm of F] (sess0) {};
+\node[dimlbl,above=2mm of sess0] {Session};
+\draw[thick,-] (sess0) -- (F.north west);
+
+% session_start_time
+\node[attr,above left=4mm and 10mm of sess0] (sessStart) {};
+\node[left=0mm of sessStart] {session\_start\_time};
+\draw[thick] (sess0) -- (sessStart);
+
+% session_end_time
+\node[attr,below left=0mm and 10mm of sess0] (sessEnd) {};
+\node[left=0mm of sessEnd] {session\_end\_time};
+\draw[thick] (sess0) -- (sessEnd);
+
+% session_origin
+\node[attr,below=5mm of sess0] (sessOrigin) {};
+\node[below=0mm of sessOrigin] {session\_origin};
+\draw[thick] (sess0) -- (sessOrigin);
+
+\end{tikzpicture}
+}
+\caption{Dimensional Fact Model for Product Usage and Engagement.}
+\end{figure}
