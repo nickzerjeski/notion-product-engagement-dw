@@ -1,0 +1,31 @@
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}
+\begin{axis}[
+    width=\textwidth,
+    height=7cm,
+    ybar,
+    bar width=14pt,
+    ymin=0,
+    xlabel={Content type},
+    ylabel={Events},
+    symbolic x coords={wiki,database,task_board,page},
+    xtick=data,
+    nodes near coords,
+    nodes near coords align={vertical},
+    enlarge x limits=0.15,
+    grid=both,
+    major grid style={gray!30},
+    minor grid style={gray!15},
+]
+    \addplot+[fill=blue!55]
+        table[
+            x=content_type,
+            y=events,
+            col sep=comma
+        ] {../../results/aq1.csv};
+\end{axis}
+\end{tikzpicture}
+\caption{Events by content type (aq1).}
+\label{fig:aq1}
+\end{figure}

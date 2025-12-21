@@ -1,0 +1,69 @@
+\def\MonthTickLabels{2024-01,2024-02,2024-03,2024-04,2024-05,2024-06,2024-07,2024-08,2024-09,2024-10,2024-11,2024-12,2025-01,2025-02,2025-03,2025-04,2025-05,2025-06,2025-07,2025-08,2025-09,2025-10,2025-11,2025-12}
+
+\pgfplotstableread[col sep=comma]{../../results/aq2.csv}\aqtwodata
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}
+\begin{axis}[
+    name=aqtwo,
+    width=\textwidth,
+    height=8cm,
+    xmin=-0.5,
+    xmax=23.5,
+    xtick={0,...,23},
+    xticklabels={\MonthTickLabels},
+    xticklabel style={rotate=45, anchor=east},
+    ylabel={Monthly DAU},
+    ymin=0,
+    grid=both,
+    major grid style={gray!30},
+    minor grid style={gray!15},
+    legend style={at={(0.02,0.98)}, anchor=north west, cells={anchor=west}},
+]
+    \addplot+[mark=*, thick, color=blue]
+        table[
+            x expr=\coordindex,
+            y=dau_current_month
+        ] {\aqtwodata};
+    \addlegendentry{DAU (current month)}
+
+    \addplot+[mark=square*, dashed, thick, color=blue!60]
+        table[
+            x expr=\coordindex,
+            y=dau_previous_month,
+            skip first n=1
+        ] {\aqtwodata};
+    \addlegendentry{DAU (previous month)}
+\end{axis}
+
+\begin{axis}[
+    at={(aqtwo.south west)},
+    anchor=south west,
+    width=\textwidth,
+    height=8cm,
+    axis x line=none,
+    axis y line*=right,
+    ymin=-100,
+    ymax=220,
+    yticklabel style={color=gray!70},
+    ylabel={Abs. MoM change},
+    y label style={color=gray!70},
+    xtick={0,...,23},
+    xticklabels=\empty,
+    ybar,
+    bar width=6pt,
+    fill=orange!50,
+    draw=orange!80!black
+]
+    \addplot
+        table[
+            x expr=\coordindex,
+            y=abs_change,
+            skip first n=1
+        ] {\aqtwodata};
+\end{axis}
+\end{tikzpicture}
+\caption{Monthly DAU progression and month-over-month change (aq2).}
+\label{fig:aq2}
+\end{figure}

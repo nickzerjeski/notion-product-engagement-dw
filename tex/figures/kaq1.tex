@@ -1,0 +1,134 @@
+\def\MonthTickLabels{2024-01,2024-02,2024-03,2024-04,2024-05,2024-06,2024-07,2024-08,2024-09,2024-10,2024-11,2024-12,2025-01,2025-02,2025-03,2025-04,2025-05,2025-06,2025-07,2025-08,2025-09,2025-10,2025-11,2025-12}
+
+\pgfplotstableread[col sep=comma]{../../results/kaq1.csv}\kaqonedata
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}
+\begin{axis}[
+    width=\textwidth,
+    height=9cm,
+    ybar stacked,
+    bar width=10pt,
+    ymin=0,
+    xtick={0,...,23},
+    xticklabels={\MonthTickLabels},
+    xticklabel style={rotate=45, anchor=east},
+    ylabel={Monthly DAU},
+    legend style={at={(0.02,0.98)}, anchor=north west, cells={anchor=west}},
+    grid=both,
+    major grid style={gray!30},
+    minor grid style={gray!15},
+]
+    \addplot+[fill=blue!50]
+        table[
+            x expr=\coordindex,
+            y=dau,
+            row predicate/.code={
+                \pgfplotstablegetelem{\pgfplotstablerow}{year}\of{\kaqonedata}
+                \edef\yearval{\pgfplotsretval}
+                \pgfplotstablegetelem{\pgfplotstablerow}{month}\of{\kaqonedata}
+                \edef\monthval{\pgfplotsretval}
+                \pgfplotstablegetelem{\pgfplotstablerow}{subscription_tier}\of{\kaqonedata}
+                \edef\tier{\pgfplotsretval}
+                \ifnum\pdfstrcmp{\yearval}{NULL}=0
+                    \pgfplotstableuserowfalse
+                \else
+                    \ifnum\pdfstrcmp{\monthval}{NULL}=0
+                        \pgfplotstableuserowfalse
+                    \else
+                        \ifnum\pdfstrcmp{\tier}{Business}=0
+                        \else
+                            \pgfplotstableuserowfalse
+                        \fi
+                    \fi
+                \fi
+            }
+        ] {\kaqonedata};
+    \addlegendentry{Business}
+
+    \addplot+[fill=green!55!black]
+        table[
+            x expr=\coordindex,
+            y=dau,
+            row predicate/.code={
+                \pgfplotstablegetelem{\pgfplotstablerow}{year}\of{\kaqonedata}
+                \edef\yearval{\pgfplotsretval}
+                \pgfplotstablegetelem{\pgfplotstablerow}{month}\of{\kaqonedata}
+                \edef\monthval{\pgfplotsretval}
+                \pgfplotstablegetelem{\pgfplotstablerow}{subscription_tier}\of{\kaqonedata}
+                \edef\tier{\pgfplotsretval}
+                \ifnum\pdfstrcmp{\yearval}{NULL}=0
+                    \pgfplotstableuserowfalse
+                \else
+                    \ifnum\pdfstrcmp{\monthval}{NULL}=0
+                        \pgfplotstableuserowfalse
+                    \else
+                        \ifnum\pdfstrcmp{\tier}{Enterprise}=0
+                        \else
+                            \pgfplotstableuserowfalse
+                        \fi
+                    \fi
+                \fi
+            }
+        ] {\kaqonedata};
+    \addlegendentry{Enterprise}
+
+    \addplot+[fill=orange!70]
+        table[
+            x expr=\coordindex,
+            y=dau,
+            row predicate/.code={
+                \pgfplotstablegetelem{\pgfplotstablerow}{year}\of{\kaqonedata}
+                \edef\yearval{\pgfplotsretval}
+                \pgfplotstablegetelem{\pgfplotstablerow}{month}\of{\kaqonedata}
+                \edef\monthval{\pgfplotsretval}
+                \pgfplotstablegetelem{\pgfplotstablerow}{subscription_tier}\of{\kaqonedata}
+                \edef\tier{\pgfplotsretval}
+                \ifnum\pdfstrcmp{\yearval}{NULL}=0
+                    \pgfplotstableuserowfalse
+                \else
+                    \ifnum\pdfstrcmp{\monthval}{NULL}=0
+                        \pgfplotstableuserowfalse
+                    \else
+                        \ifnum\pdfstrcmp{\tier}{Plus}=0
+                        \else
+                            \pgfplotstableuserowfalse
+                        \fi
+                    \fi
+                \fi
+            }
+        ] {\kaqonedata};
+    \addlegendentry{Plus}
+
+    \addplot+[fill=gray!60]
+        table[
+            x expr=\coordindex,
+            y=dau,
+            row predicate/.code={
+                \pgfplotstablegetelem{\pgfplotstablerow}{year}\of{\kaqonedata}
+                \edef\yearval{\pgfplotsretval}
+                \pgfplotstablegetelem{\pgfplotstablerow}{month}\of{\kaqonedata}
+                \edef\monthval{\pgfplotsretval}
+                \pgfplotstablegetelem{\pgfplotstablerow}{subscription_tier}\of{\kaqonedata}
+                \edef\tier{\pgfplotsretval}
+                \ifnum\pdfstrcmp{\yearval}{NULL}=0
+                    \pgfplotstableuserowfalse
+                \else
+                    \ifnum\pdfstrcmp{\monthval}{NULL}=0
+                        \pgfplotstableuserowfalse
+                    \else
+                        \ifnum\pdfstrcmp{\tier}{Free}=0
+                        \else
+                            \pgfplotstableuserowfalse
+                        \fi
+                    \fi
+                \fi
+            }
+        ] {\kaqonedata};
+    \addlegendentry{Free}
+\end{axis}
+\end{tikzpicture}
+\caption{Monthly DAU by subscription tier (kaq1).}
+\label{fig:kaq1}
+\end{figure}
