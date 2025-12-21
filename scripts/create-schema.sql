@@ -1,6 +1,5 @@
 -- ==========================================================
 -- NOTION DW: Product Usage & Engagement (Star Schema)
--- Dialect: PostgreSQL
 -- ==========================================================
 
 CREATE SCHEMA IF NOT EXISTS notion_dw;
@@ -76,7 +75,7 @@ CREATE TABLE IF NOT EXISTS dim_session (
 );
 
 -- -------------------------
--- FACT (partitioned by day)
+-- FACT
 -- -------------------------
 
 CREATE TABLE IF NOT EXISTS fact_product_usage_engagement (
@@ -112,19 +111,8 @@ CREATE TABLE IF NOT EXISTS fact_product_usage_engagement (
   )
 ) PARTITION BY RANGE (time_key);
 
--- Example partitions for two years (daily time_key encoded as YYYYMMDD).
--- Create only the required partitions in production via automation.
--- Partition boundaries here are illustrative.
-CREATE TABLE IF NOT EXISTS fact_p_202501
-  PARTITION OF fact_product_usage_engagement
-  FOR VALUES FROM (20250101) TO (20250201);
-
-CREATE TABLE IF NOT EXISTS fact_p_202502
-  PARTITION OF fact_product_usage_engagement
-  FOR VALUES FROM (20250201) TO (20250301);
-
 -- -------------------------
--- INDEXES (star join)
+-- INDEXES
 -- -------------------------
 
 CREATE INDEX IF NOT EXISTS idx_fact_user      ON fact_product_usage_engagement (user_key);
