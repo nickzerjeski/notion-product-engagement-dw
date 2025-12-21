@@ -1,9 +1,5 @@
 \begin{figure}[H]
     \centering
-    \pgfplotstableread[
-        col sep=comma,
-        ignore chars={\"}
-    ]{../results/kaq1.csv}\kaqone
     \begin{tikzpicture}
         \begin{axis}[
             width=\textwidth,
@@ -31,76 +27,36 @@
             enlargelimits=0.02,
             unbounded coords=discard
         ]
-            \addplot+[semithick, mark=*, mark size=2pt] table[
-                x expr=\coordindex+1,
-                y=dau,
-                row predicate/.code={
-                    \pgfplotstablegetelem{\pgfplotstablerow}{year}\of{\kaqone}%
-                    \edef\tempYear{\pgfplotsretval}%
-                    \ifnum\pdfstrcmp{\tempYear}{2024}=0\else
-                        \ifnum\pdfstrcmp{\tempYear}{2025}=0\else\pgfplotstableuserowfalse\fi
-                    \fi
-                    \pgfplotstablegetelem{\pgfplotstablerow}{subscription_tier}\of{\kaqone}%
-                    \edef\tempTier{\pgfplotsretval}%
-                    \ifnum\pdfstrcmp{\tempTier}{Free}=0\else\pgfplotstableuserowfalse\fi
-                }
-            ] {\kaqone};
-            \addplot+[semithick, mark=square*, mark size=2pt] table[
-                x expr=\coordindex+1,
-                y=dau,
-                row predicate/.code={
-                    \pgfplotstablegetelem{\pgfplotstablerow}{year}\of{\kaqone}%
-                    \edef\tempYear{\pgfplotsretval}%
-                    \ifnum\pdfstrcmp{\tempYear}{2024}=0\else
-                        \ifnum\pdfstrcmp{\tempYear}{2025}=0\else\pgfplotstableuserowfalse\fi
-                    \fi
-                    \pgfplotstablegetelem{\pgfplotstablerow}{subscription_tier}\of{\kaqone}%
-                    \edef\tempTier{\pgfplotsretval}%
-                    \ifnum\pdfstrcmp{\tempTier}{Plus}=0\else\pgfplotstableuserowfalse\fi
-                }
-            ] {\kaqone};
-            \addplot+[semithick, mark=triangle*, mark size=3pt] table[
-                x expr=\coordindex+1,
-                y=dau,
-                row predicate/.code={
-                    \pgfplotstablegetelem{\pgfplotstablerow}{year}\of{\kaqone}%
-                    \edef\tempYear{\pgfplotsretval}%
-                    \ifnum\pdfstrcmp{\tempYear}{2024}=0\else
-                        \ifnum\pdfstrcmp{\tempYear}{2025}=0\else\pgfplotstableuserowfalse\fi
-                    \fi
-                    \pgfplotstablegetelem{\pgfplotstablerow}{subscription_tier}\of{\kaqone}%
-                    \edef\tempTier{\pgfplotsretval}%
-                    \ifnum\pdfstrcmp{\tempTier}{Business}=0\else\pgfplotstableuserowfalse\fi
-                }
-            ] {\kaqone};
-            \addplot+[semithick, mark=diamond*, mark size=2.5pt] table[
-                x expr=\coordindex+1,
-                y=dau,
-                row predicate/.code={
-                    \pgfplotstablegetelem{\pgfplotstablerow}{year}\of{\kaqone}%
-                    \edef\tempYear{\pgfplotsretval}%
-                    \ifnum\pdfstrcmp{\tempYear}{2024}=0\else
-                        \ifnum\pdfstrcmp{\tempYear}{2025}=0\else\pgfplotstableuserowfalse\fi
-                    \fi
-                    \pgfplotstablegetelem{\pgfplotstablerow}{subscription_tier}\of{\kaqone}%
-                    \edef\tempTier{\pgfplotsretval}%
-                    \ifnum\pdfstrcmp{\tempTier}{Enterprise}=0\else\pgfplotstableuserowfalse\fi
-                }
-            ] {\kaqone};
-            \addplot+[semithick, mark=star, mark size=2.8pt] table[
-                x expr=\coordindex+1,
-                y=dau,
-                row predicate/.code={
-                    \pgfplotstablegetelem{\pgfplotstablerow}{year}\of{\kaqone}%
-                    \edef\tempYear{\pgfplotsretval}%
-                    \ifnum\pdfstrcmp{\tempYear}{2024}=0\else
-                        \ifnum\pdfstrcmp{\tempYear}{2025}=0\else\pgfplotstableuserowfalse\fi
-                    \fi
-                    \pgfplotstablegetelem{\pgfplotstablerow}{subscription_tier}\of{\kaqone}%
-                    \edef\tempTier{\pgfplotsretval}%
-                    \ifnum\pdfstrcmp{\tempTier}{NULL}=0\else\pgfplotstableuserowfalse\fi
-                }
-            ] {\kaqone};
+            \addplot+[semithick, mark=*, mark size=2pt] coordinates {
+                (1, 14) (2, 23) (3, 35) (4, 33) (5, 52) (6, 48)
+                (7, 61) (8, 77) (9, 65) (10, 87) (11, 87) (12, 97)
+                (13, 116) (14, 115) (15, 119) (16, 124) (17, 116) (18, 133)
+                (19, 156) (20, 171) (21, 143) (22, 182) (23, 186) (24, 203)
+            };
+            \addplot+[semithick, mark=square*, mark size=2pt] coordinates {
+                (1, 16) (2, 24) (3, 44) (4, 52) (5, 65) (6, 66)
+                (7, 75) (8, 98) (9, 114) (10, 129) (11, 127) (12, 132)
+                (13, 155) (14, 165) (15, 190) (16, 170) (17, 199) (18, 220)
+                (19, 221) (20, 239) (21, 221) (22, 275) (23, 282) (24, 297)
+            };
+            \addplot+[semithick, mark=triangle*, mark size=3pt] coordinates {
+                (1, 31) (2, 44) (3, 70) (4, 114) (5, 129) (6, 138)
+                (7, 169) (8, 210) (9, 215) (10, 240) (11, 239) (12, 301)
+                (13, 351) (14, 331) (15, 350) (16, 372) (17, 410) (18, 437)
+                (19, 483) (20, 478) (21, 508) (22, 511) (23, 527) (24, 564)
+            };
+            \addplot+[semithick, mark=diamond*, mark size=2.5pt] coordinates {
+                (1, 36) (2, 48) (3, 110) (4, 99) (5, 158) (6, 153)
+                (7, 203) (8, 248) (9, 252) (10, 290) (11, 311) (12, 360)
+                (13, 379) (14, 357) (15, 431) (16, 403) (17, 465) (18, 498)
+                (19, 544) (20, 575) (21, 533) (22, 637) (23, 633) (24, 712)
+            };
+            \addplot+[semithick, mark=star, mark size=2.8pt] coordinates {
+                (1, 97) (2, 139) (3, 259) (4, 298) (5, 404) (6, 405)
+                (7, 508) (8, 633) (9, 646) (10, 746) (11, 764) (12, 890)
+                (13, 1001) (14, 968) (15, 1090) (16, 1069) (17, 1190) (18, 1288)
+                (19, 1404) (20, 1463) (21, 1405) (22, 1605) (23, 1628) (24, 1776)
+            };
             \legend{Free, Plus, Business, Enterprise, Combined}
         \end{axis}
     \end{tikzpicture}
