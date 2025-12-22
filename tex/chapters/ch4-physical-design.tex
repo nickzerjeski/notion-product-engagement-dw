@@ -1,4 +1,4 @@
-\chapter{Physical Design}
+\chapter{Physical Design}\label{ch:4}
 Now that the logical design is in place, we can start to implement it in a real database system. For that, we create a script that creates all the tables with their corresponding surrogate keys and relations we defined in Chapter \ref{ch:3}. A snippet of this script can be seen in Listing \ref{lst:cs1}. Keep in mind that the full scripts are provided as appendix.
 \input{../listings/create-snippet}
 Here we can see that every attribute with a \_key postfix is a surrogate key. As you can see in Table \ref{tab:siz}, the fact table can get rather big. It is therefore useful to split it into smaller tables. For our Key Analytical Questions we want to answer later on, it is beneficial to partition the table on the time dimension.
@@ -14,8 +14,4 @@ Sessions were added at about five per day, with durations between roughly 20 and
 
 Finally, the fact table generation ties everything together. We compute an activation probability per user based on their tier and only give activation events to users who pass that threshold in their first week. On top of that, we assign monthly event volumes per user that scale with their tier, then sprinkled some randomness in it to avoid overly uniform behavior.
 
-For each event we pick a date within the valid window, that is an event can only occur after a user created their account, attach biased mixes for content types, devices, and event types, and link the event to a workspace and a same-day session. The measure flags are set according to the type of event and content so that activation, feature usage, and collaboration metrics come out believable. This way the warehouse ends up with structured, meaningful mock data so we are ready to answer our key analytical questions. All scripts that answers those questions are provided in the appendix.
-
-For our first question, we wanted to know how the user engagement evolves over multiple tiers.
-
-\input{../figures/kaq1}
+For each event we pick a date within the valid window, that is an event can only occur after a user created their account, attach biased mixes for content types, devices, and event types, and link the event to a workspace and a same-day session. The measure flags are set according to the type of event and content so that activation, feature usage, and collaboration metrics come out believable. This way the warehouse ends up with structured, meaningful mock data so we are ready to answer our key analytical questions.

@@ -1,0 +1,9 @@
+\chapter{Results}
+In the following, we present the results we obtained by answering the Key Analytical Questions defined in Chapter \ref{ch:2} using the data warehouse designed and implemented in the previous chapters. For that, we executed the queries defined for each question against the data warehouse and visualized the results using appropriate charts.
+
+\paragraph{How does user engagement evolve over multiple subscription tiers over time?}
+
+For our first question, we wanted to know how the user engagement evolves over multiple subscription tiers. But it is also helpful to see how engagement evolves over time in general, so we can spot trends and seasonality. Therefore, we created a query that aggregates the number of active users per month and subscription tier. Furthermore, we also wanted to see how many active users are in each tier in total over the time span, so we can see, which tier has the most engagement. Finally, we wanted to know what the total engagement was over the total time span to see how many users were active in total. To extract those information, we used the query described in Listing \ref{lst:kaq1}.
+\input{../listings/kaq1-query}
+To retrieve the data we wanted to know, it was benefitial to use the \texttt{GROUPING SETS} feature of SQL, which allows us to group by multiple dimensions in a single query. This way, we could get the monthly active users per subscription tier, the total active users per subscription tier, and the total active users overall in a single query. After executing the query against our data warehouse, we visualized the results of the evolution of user engagement over time in Figure \ref{fig:kaq1}.
+\input{../figures/kaq1}
