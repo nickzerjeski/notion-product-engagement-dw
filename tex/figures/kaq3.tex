@@ -1,0 +1,39 @@
+\begin{figure}[H]
+    \centering
+    \begin{tikzpicture}
+        \begin{axis}[
+            width=\textwidth,
+            height=0.35\textwidth,
+            ylabel={Activation rate},
+            xmin=1,
+            xmax=24,
+            ymin=0.5,
+            ymax=1.0,
+            xtick={1,...,24},
+            xticklabels={
+                Jan 2024,Feb 2024,Mar 2024,Apr 2024,May 2024,Jun 2024,
+                Jul 2024,Aug 2024,Sep 2024,Oct 2024,Nov 2024,Dec 2024,
+                Jan 2025,Feb 2025,Mar 2025,Apr 2025,May 2025,Jun 2025,
+                Jul 2025,Aug 2025,Sep 2025,Oct 2025,Nov 2025,Dec 2025
+            },
+            xticklabel style={rotate=45, anchor=east},
+            tick label style={font=\small},
+            grid=both,
+            major grid style={dashed, gray!35},
+            minor grid style={dotted, gray!20},
+            enlargelimits=0.02,
+            unbounded coords=discard
+        ]
+            \addplot+[semithick, mark=*, mark size=2pt] coordinates {
+                (1, 0.7000) (2, 0.6316) (3, 0.7500) (4, 0.7500)
+                (5, 0.8500) (6, 0.8000) (7, 0.6000) (8, 0.6500)
+                (9, 0.7895) (10, 0.6500) (11, 0.6316) (12, 0.8000)
+                (13, 0.7500) (14, 0.7500) (15, 0.7500) (16, 0.8000)
+                (17, 0.9000) (18, 0.7000) (19, 0.7000) (20, 0.8500)
+                (21, 0.7500) (22, 0.7500) (23, 0.8500) (24, 0.7500)
+            };
+        \end{axis}
+    \end{tikzpicture}
+    \caption{Activation rate of new users within seven days by signup month for Jan 2024 - Dec 2025.}
+    \label{fig:kaq3}
+\end{figure}

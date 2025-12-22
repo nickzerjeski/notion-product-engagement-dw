@@ -1,0 +1,36 @@
+\begin{lstlisting}[language=SQL,caption={Query for answering: How does user engagement evolve over time across subsciption tiers?},label={lst:kaq3},captionpos=b]
+WITH user_events AS (
+  SELECT
+    u.user_key,
+    u.signup_date,
+    t.calendar_date,
+    f.activation_event_flag,
+    ROW_NUMBER() OVER w AS rn_after_signup
+  FROM fact_product_usage_engagement f
+  JOIN dim_user u ON u.user_key = f.user_key
+  JOIN dim_time t ON t.time_key = f.time_key
+  WHERE t.calendar_date >= u.signup_date
+    AND t.calendar_date <  u.signup_date + INTERVAL '7 days'
+  WINDOW w AS 
+    (PARTITION BY u.user_key ORDER BY t.calendar_date)
+),
+activation_by_user AS (
+  SELECT
+    user_key,
+    MIN(signup_date) AS signup_date,
+    MAX(activation_event_flag) AS activated_within_7d
+  FROM user_events
+  GROUP BY user_key
+)
+SELECT
+  DATE_TRUNC('month', signup_date)::date AS signup_month,
+  COUNT(*)                               AS new_users,
+  SUM(activated_within_7d)               AS activated_users,
+  ROUND(
+    SUM(activated_within_7d)::numeric / NULLIF(COUNT(*), 0),
+    4
+  )                                      AS activation_rate
+FROM activation_by_user
+GROUP BY DATE_TRUNC('month', signup_date)
+ORDER BY signup_month;
+\end{lstlisting}
