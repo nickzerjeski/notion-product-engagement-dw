@@ -1,4 +1,4 @@
-\begin{lstlisting}[language=SQL,caption={Query for answering: How does user engagement evolve over time across subsciption tiers?},label={lst:kaq2},captionpos=b]
+\begin{lstlisting}[language=SQL,caption={Query for answering: How does user engagement evolve over time across different content types?},label={lst:kaq2},captionpos=b]
 SELECT t.year, t.month, c.content_type,
         SUM(f.active_user_flag) AS dau
 FROM fact_product_usage_engagement f
