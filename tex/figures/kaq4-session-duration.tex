@@ -1,0 +1,58 @@
+\begin{figure}[H]
+    \centering
+    \begin{tikzpicture}
+        \begin{axis}[
+            width=\textwidth,
+            height=0.6\textwidth,
+            ylabel={Avg. session duration (sec)},
+            xmin=1,
+            xmax=24,
+            ymin=1000,
+            ymax=3000,
+            xtick={1,...,24},
+            xticklabels={
+                Jan 2024,Feb 2024,Mar 2024,Apr 2024,May 2024,Jun 2024,
+                Jul 2024,Aug 2024,Sep 2024,Oct 2024,Nov 2024,Dec 2024,
+                Jan 2025,Feb 2025,Mar 2025,Apr 2025,May 2025,Jun 2025,
+                Jul 2025,Aug 2025,Sep 2025,Oct 2025,Nov 2025,Dec 2025
+            },
+            xticklabel style={rotate=45, anchor=east},
+            tick label style={font=\small},
+            legend style={at={(0.02,0.98)}, anchor=north west, nodes={scale=0.9, transform shape}},
+            legend columns=2,
+            grid=both,
+            major grid style={dashed, gray!35},
+            minor grid style={dotted, gray!20},
+            enlargelimits=0.02,
+            unbounded coords=discard
+        ]
+            \addplot+[semithick, mark=*, mark size=2pt] coordinates {
+                (1, 2802.9) (2, 2777.5) (3, 2781.7) (4, 2780.1) (5, 2794.6) (6, 2795.0)
+                (7, 2817.7) (8, 2809.0) (9, 2807.7) (10, 2800.5) (11, 2798.4) (12, 2801.9)
+                (13, 2807.6) (14, 2793.7) (15, 2811.3) (16, 2799.4) (17, 2794.5) (18, 2798.7)
+                (19, 2798.4) (20, 2792.9) (21, 2798.5) (22, 2803.0) (23, 2800.6) (24, 2796.5)
+            };
+            \addplot+[semithick, mark=square*, mark size=2pt] coordinates {
+                (1, 1166.1) (2, 1138.5) (3, 1165.2) (4, 1167.5) (5, 1166.3) (6, 1140.3)
+                (7, 1140.6) (8, 1147.8) (9, 1155.2) (10, 1151.3) (11, 1158.8) (12, 1143.4)
+                (13, 1139.1) (14, 1159.5) (15, 1159.3) (16, 1160.2) (17, 1153.7) (18, 1141.5)
+                (19, 1147.4) (20, 1163.0) (21, 1148.0) (22, 1145.3) (23, 1149.0) (24, 1151.0)
+            };
+            \addplot+[semithick, mark=triangle*, mark size=3pt] coordinates {
+                (1, 2118.5) (2, 2108.5) (3, 2104.4) (4, 2103.1) (5, 2099.9) (6, 2100.5)
+                (7, 2099.9) (8, 2097.8) (9, 2106.1) (10, 2093.8) (11, 2097.4) (12, 2104.5)
+                (13, 2096.2) (14, 2097.6) (15, 2099.8) (16, 2097.5) (17, 2097.5) (18, 2100.1)
+                (19, 2102.6) (20, 2100.7) (21, 2097.9) (22, 2102.6) (23, 2102.1) (24, 2098.7)
+            };
+            \addplot+[semithick, mark=diamond*, mark size=2.5pt] coordinates {
+                (1, 2307.3) (2, 2242.6) (3, 2289.8) (4, 2289.1) (5, 2274.9) (6, 2277.3)
+                (7, 2298.2) (8, 2288.6) (9, 2286.2) (10, 2280.3) (11, 2284.7) (12, 2294.8)
+                (13, 2284.6) (14, 2291.1) (15, 2285.6) (16, 2298.4) (17, 2287.0) (18, 2275.8)
+                (19, 2283.7) (20, 2290.3) (21, 2283.0) (22, 2283.0) (23, 2285.0) (24, 2282.4)
+            };
+            \legend{Desktop, Mobile, Web, All devices}
+        \end{axis}
+    \end{tikzpicture}
+    \caption{Average session duration by device type for Jan 2024 - Dec 2025.}
+    \label{fig:kaq4-session-duration}
+\end{figure}

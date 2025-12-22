@@ -1,0 +1,16 @@
+\begin{lstlisting}[language=SQL,caption={Query for answering: How does device type influence user activity},label={lst:kaq4},captionpos=b]
+SELECT
+  t.year,
+  t.month,
+  d.platform,
+  SUM(f.event_count)        AS events,
+  SUM(f.active_user_flag)   AS dau,
+  ROUND(AVG(NULLIF(f.session_duration_sec,0))::numeric, 1)
+                            AS avg_session_duration_sec
+FROM fact_product_usage_engagement f
+JOIN dim_time t    ON t.time_key = f.time_key
+JOIN dim_device d  ON d.device_key = f.device_key
+GROUP BY ROLLUP (t.year, t.month, d.platform)
+ORDER BY t.year NULLS LAST, t.month NULLS LAST,
+                         d.platform NULLS LAST;
+\end{lstlisting}
