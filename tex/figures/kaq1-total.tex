@@ -1,0 +1,31 @@
+\begin{figure}[H]
+    \centering
+    \begin{tikzpicture}
+        \begin{axis}[
+            xbar stacked,
+            width=\textwidth,
+            height=0.25\textwidth,
+            xlabel={Total DAU},
+            ytick={0},
+            xmin=0,
+            xmax=22000,
+            scaled ticks=false,
+            bar width=18pt,
+            tick label style={font=\small},
+            legend style={at={(0.02,0.98)}, anchor=north west, nodes={scale=0.9, transform shape}},
+            legend columns=4,
+            grid=both,
+            major grid style={dashed, gray!35},
+            minor grid style={dotted, gray!20},
+            enlargelimits=0.02
+        ]
+            \addplot+[fill=blue!55] coordinates {(2443, 0)};
+            \addplot+[fill=orange!70] coordinates {(3576, 0)};
+            \addplot+[fill=green!60] coordinates {(7222, 0)};
+            \addplot+[fill=red!60] coordinates {(8435, 0)};
+            \legend{Free, Plus, Business, Enterprise}
+        \end{axis}
+    \end{tikzpicture}
+    \caption{Total DAU by subscription tier for Jan 2024 - Dec 2025.}
+    \label{fig:kaq1-total}
+\end{figure}

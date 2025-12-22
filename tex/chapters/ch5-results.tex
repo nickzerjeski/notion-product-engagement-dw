@@ -2,8 +2,17 @@
 In the following, we present the results we obtained by answering the Key Analytical Questions defined in Chapter \ref{ch:2} using the data warehouse designed and implemented in the previous chapters. For that, we executed the queries defined for each question against the data warehouse and visualized the results using appropriate charts.
 
 \paragraph{How does user engagement evolve over multiple subscription tiers over time?}
-
 For our first question, we wanted to know how the user engagement evolves over multiple subscription tiers. But it is also helpful to see how engagement evolves over time in general, so we can spot trends and seasonality. Therefore, we created a query that aggregates the number of active users per month and subscription tier. Furthermore, we also wanted to see how many active users are in each tier in total over the time span, so we can see, which tier has the most engagement. Finally, we wanted to know what the total engagement was over the total time span to see how many users were active in total. To extract those information, we used the query described in Listing \ref{lst:kaq1}.
 \input{../listings/kaq1-query}
 To retrieve the data we wanted to know, it was benefitial to use the \texttt{GROUPING SETS} feature of SQL, which allows us to group by multiple dimensions in a single query. This way, we could get the monthly active users per subscription tier, the total active users per subscription tier, and the total active users overall in a single query. After executing the query against our data warehouse, we visualized the results of the evolution of user engagement over time in Figure \ref{fig:kaq1}.
 \input{../figures/kaq1}
+To compare the total engagement per subscription tier, we created a bar chart as shown in Figure \ref{fig:kaq1-total}.
+\input{../figures/kaq1-total}
+Here we can see that the \textit{Enterprise} tier has the highest total daily active users (DAU) with 8,435 users, followed by the \textit{Business} tier with 7,222 users. The \textit{Plus} and \textit{Free} tiers have significantly lower total DAU, with 3,576 and 2,443 users respectively. This indicates that higher subscription tiers tend to have more engaged users, which could be due to the higher involvement they have do to higher billing plans. To get a better understanding of the user engagement we take a look at the second question.
+
+\paragraph{Which content types generate the highest sustained interaction rates?}
+To answer our second question, we wanted to know which content types generate the highest sustained interaction rates. Therefore, we created a query that aggregates the number of interactions per content type and month. This way, we can see which content types are interacted with the most over time. To extract those information, we used the query described in Listing \ref{lst:kaq2}.
+\input{../listings/kaq2-query}
+This time, we used \texttt{CUBE} to retrieve all combinations of content types, months and years. This way, we could get all levels of granularity in a single query. Therefore, we can get a little bit more insights into the data which is especially benefitial when investigating content types. First, we take a look at the usage of the diffrent content types over time as shown in Figure \ref{fig:kaq2}.
+\input{../figures/kaq2}
+Here we can see that the \textit{Wiki} content type has the highest monthly DAU, followed by \textit{Task Board}, \textit{Database}, and \textit{Page}. This indicates that users tend to interact more with \textit{Wiki} content, which could be due to its collaborative nature and the fact that it is often used for documentation and knowledge sharing.

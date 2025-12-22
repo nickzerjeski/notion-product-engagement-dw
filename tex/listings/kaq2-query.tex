@@ -1,0 +1,10 @@
+\begin{lstlisting}[language=SQL,caption={Query for answering: How does user engagement evolve over time across subsciption tiers?},label={lst:kaq2},captionpos=b]
+SELECT t.year, t.month, c.content_type,
+        SUM(f.active_user_flag) AS dau
+FROM fact_product_usage_engagement f
+JOIN dim_time t    ON t.time_key = f.time_key
+JOIN dim_content c ON c.content_key = f.content_key
+GROUP BY CUBE (t.year, t.month, c.content_type)
+ORDER BY t.year NULLS LAST, t.month NULLS LAST,
+                    c.content_type NULLS LAST;
+\end{lstlisting}

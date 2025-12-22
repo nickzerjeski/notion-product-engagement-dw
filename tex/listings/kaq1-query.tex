@@ -1,6 +1,6 @@
 \begin{lstlisting}[language=SQL,caption={Query for answering: How does user engagement evolve over time across subsciption tiers?},label={lst:kaq1},captionpos=b]
 SELECT t.year, t.month, u.subscription_tier,
-  SUM(f.event_count) AS events,
+  SUM(f.active_user_flag) AS dau,
 FROM fact_product_usage_engagement f
 JOIN dim_time t ON t.time_key = f.time_key
 JOIN dim_user u ON u.user_key = f.user_key
