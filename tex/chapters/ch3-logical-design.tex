@@ -1,0 +1,43 @@
+\chapter{Logical Design}\label{ch:3}
+Since all hierarchies are shallow and local to their dimensions and no hierarchy is reused across multiple dimensions, there is no need to normalize those hierarchies into additional tables. To keep the number of joins to a minimum and the queries as simple as possible, especially with no significant gain in storage efficiency, we are using a star schema for our \textit{Product Usage and Engagement} fact. Therefore, we have the following fact table, followed by the dimension tables.
+
+\input{../tables/fact-table}
+
+\input{../tables/time-user-tables}
+\input{../tables/workspace-content-tables}
+\input{../tables/device-event-tables}
+\input{../tables/session-table}
+To get an overview on how much space we will be using, we estimate the cardinality of our tables. For that, we assume that we save our data for two years. Furthermore, we assume that we have a user base of around five million users from which roughly \(20\%\) are active on a given day and produce around \(10\) interactions. Therefore, we have the following size of our fact table:
+\[5\text{Mio User }\cdot 20\%\cdot10\text{ Interactions }\cdot730\text{ days}=7.3\cdot 10^9\text{ rows}\]
+We further assume, that each workspace has on average ten users, which yields a total of \(500\)k rows for the workspace table. If each of the workspaces has around 50 content objects in it, the content table has \(25\)Mio rows. For the device dimension, we simply assume that there are \(100\) different devices available and we also have around 100 different types of events. Finally, for the session, we assume a day is a session. Therefore, we have 
+\[5\text{Mio User }\cdot 20\%\cdot730\text{ days}=7.3\cdot 10^8\text{ rows}\]
+for the session table. To simplify the calculation of the size of the table, we assume that each column takes \(8\) Bytes. With that our tables have the sizes specified in Table \ref{tab:siz}. Keep in mind that some values are rounded.
+\input{../tables/table-sizes}
+
+
+\section{Demonstration}
+Now that we have the logical model in place, it is ready to support analytical workflows. To demonstrate how our schema answers to the defined business questions in section \ref{sec:1.1}, we select two of them and express them directly in SQL to extract the data from our  newly created fact and dimension tables. To be able to do this, we first have to populate our tables with some mock data. Note that only attributes are specified, that are needed for the analytical query.
+
+\input{../tables/mock-fact-usage}
+
+\input{../tables/mock-time-user}
+
+\input{../tables/mock-content}
+
+With the mock data in place, we can go to our business questions. As first question we choose
+\begin{quote}
+    How does user engagement evolve over time across subscription tiers?
+\end{quote}
+This is an important question for subscription-based SaaS products, since different user tiers often exhibit different engagement patterns. Understanding how frequently users in each tier interact with the platform over time allows to identify trends in adoption, retention, and value perception. In Listing \ref{lst:bq1} you can see the query that extracts the information needed for answering this question.
+\input{../listings/bq1-query}
+The result of running this query can be seen in Table \ref{tbl:bq1-results}.
+\input{../tables/bq1-results}
+
+The second business question for which we run the query on is
+\begin{quote}
+    Which content types generate the highest interaction rates?
+\end{quote}
+This is an important business question because different content types are related to different workflows, and their usage patterns are strong indicators of feature adoption. Analyzing it provides insights on how future features can be developed. In Listing \ref{lst:bq2} you can see the query that extracts the information needed for answering this question.
+\input{../listings/bq2-query}
+The result of this query can be seen in Table \ref{tbl:bq2-results}.
+\input{../tables/bq2-results}

@@ -1,0 +1,65 @@
+\chapter{Conceptual Design}
+To build the Dimensional Fact Model, we first think about which dimensions and measures our fact should have. Since we are describing the Product Usage and Engagement our fact will represent a single atomic user event in Notion such as these described in Chapter \ref{ch:1}. To capture the full behavioral context, we need to capture also the user, the content object, the workspace, the device, the event type, the session and the timestamp, which we do via dimensions. We therefore have the following dimensions:
+\input{../tables/dim-user}
+
+\input{../tables/dim-content}
+
+\input{../tables/dim-workspace}
+
+\input{../tables/dim-device}
+
+\input{../tables/dim-event}
+
+\input{../tables/dim-session}
+
+\input{../tables/dim-time}
+To evaluate product usage and engagement effectively, the fact table must also include measures that quantify how users interact with Notion. Therefore, the following measures allow us to aggregate individual events into meaningful indicators:
+
+\textbf{Event Count}
+\begin{itemize} % Important for possible aggregations later on
+    \item \textbf{Description:} Always 1 per event.
+    \item \textbf{Additivity:} Fully additive across all dimensions.
+\end{itemize}
+
+\textbf{Active User Flag}
+\begin{itemize}
+    \item \textbf{Description:} 1 on a user's first event of a day, 0 otherwise.
+    \item \textbf{Additivity:} Additive across users for a fixed day; semi-additive across time.
+\end{itemize}
+
+\textbf{Activation Event Flag}
+\begin{itemize}
+    \item \textbf{Description:} 1 if the event is a meaningful interaction within the first seven days after signup.
+    \item \textbf{Additivity:} Additive within user-time windows; non-additive when converted into activation rates.
+\end{itemize}
+
+\textbf{Feature Usage Flag}
+\begin{itemize}
+    \item \textbf{Description:} 1 if the event uses an advanced feature.
+    \item \textbf{Additivity:} Additive for counts; non-additive when used in ratios.
+\end{itemize}
+
+\textbf{Collaboration Event Flag}
+\begin{itemize}
+    \item \textbf{Description:} 1 for events occurring in a collaborative context.
+    \item \textbf{Additivity:} Additive for counts; non-additive for proportions.
+\end{itemize}
+
+\textbf{Session Event Count}
+\begin{itemize}
+    \item \textbf{Description:} Number of events per session (sum of Event Count grouped by session).
+    \item \textbf{Additivity:} Additive within a session; semi-additive across time.
+\end{itemize}
+
+\textbf{Session Duration Seconds}
+\begin{itemize}
+    \item \textbf{Description:} Stored on the final event of a session.
+    \item \textbf{Additivity:} Additive across sessions; semi-additive across time.
+\end{itemize}
+
+
+\section{Dimensional Fact Model}
+Since we now discussed and defined the dimensions and measures of our Product Usage and Engagement fact, we can start building the Dimensional Fact Model (DFM).
+
+\input{../figures/dfm}
+TODO: Explaining the DFM and why I choose some of the design choices I made

@@ -1,0 +1,43 @@
+\chapter{Domain Analysis and Description}\label{ch:1}
+% Select a company and describe its domain
+As the title suggests, in this case study we look at Notion. Notion is a Software-as-a-Service (SaaS) company that provides an all-in-one productivity and collaboration platform. It enables individuals and teams to create, organize, and share knowledge through a unified interface that combines note-taking, database management, task tracking, and wiki functionality. The platform is structured around \textit{workspaces} (multi-tenant units), which contain \textit{pages} composed of modular \textit{blocks} such as text, images, tables, and databases. These blocks are the atomic units of content and interaction. Workspaces can have multiple users, permission hierarchies, and integrations with external tools via API's.
+
+% Describe the data landscape
+The Notion ecosystem generates many voluminous data streams across several domains such as data about the Content, the User, Billing Data, Marketing and the Product Usage. In this case study we will focus on the Product Usage and Engagement. That is Event-level logs that captures user actions such as page creation, edits, views, comments, shares and API interactions. This data allows for temporal and behavioral analytics at high granularity.
+
+% Data Warehouse Motivation (in this context)
+A data warehouse is essential for Notion because its operational data is fragmented across multiple systems which are not optimized for analysis. Since the data is scattered it must be integrated into a consistent, subject-oriented repository to enable meaningful insights. A data warehouse provides stable, time-variant storage that preserves historical information necessary for analyzing trends in engagement and feature usage. This allows for fast, flexible querying of complex behavioral data. It also improves the data quality and consistency by cleaning and using heterogeneous sources. Therefore, a Data Warehouse enables us to transform raw event data into actionable intelligence. Ultimately, it provides the foundation for evidence-based decision-making and continuous product optimization.
+
+\section{Key Analytical Questions}\label{sec:1.1}
+The following five questions should later able to be answered by running queries on or data warehouse.
+
+\begin{itemize}
+\item \textbf{How does user engagement evolve over time across subscription tiers?}
+This question reveals differences in activity between free and paid plans, supporting decisions on pricing and feature differentiation.
+
+\item \textbf{Which content types (pages, databases, wikis, task boards) generate the highest sustained interaction rates?}  
+Identifying the most engaging content structures helps prioritize feature development and template curation.
+
+\item \textbf{What are the activation rates of new users within their first seven days?}  
+Activation is a leading indicator of retention; understanding early engagement patterns enables targeted onboarding improvements.
+
+\item \textbf{How does device usage (web, mobile, desktop) affect user activity and session duration?}  
+Device-level analysis supports product optimization and informs cross-platform development priorities.
+
+\item \textbf{What proportion of total activity originates from collaborative versus individual work?}  
+Measuring the balance between solo and shared content usage reveals how effectively Notion fosters team adoption within workspaces.
+\end{itemize}
+
+\section{Key Performance Indicators (KPIs)}
+Each analytical question corresponds to one or more measurable KPIs central to product health evaluation:
+
+\begin{itemize}
+\item \textbf{Daily/Weekly/Monthly Active Users (DAU/WAU/MAU):} Core activity metrics measuring recurring usage patterns.
+\item \textbf{Stickiness Ratio (DAU/MAU):} Indicates habitual engagement and long-term adoption strength.
+\item \textbf{Activation Rate:} Percentage of new users performing a predefined minimum number of meaningful interactions (e.g., seven content edits within seven days).
+\item \textbf{Feature Adoption Rate:} Share of users engaging with advanced functionalities such as databases, templates, or integrations.
+\item \textbf{Average Session Depth:} Mean number of interactions per user session, used to evaluate content richness and user intent.
+\end{itemize}
+
+\section{Granularity Discussion}
+Since we are trying to analyze \textbf{Product Usage and Engagement} the appropriate granularity in this context are \textbf{Event-level facts}. Event-level facts capture each individual user action that occurs within a workspace, including page creations, edits, views, comments, shares, and API-driven interactions tied to a timestamp. Therefore, this level of detail is fine enough to compute all engagement-related KPIs. Furthermore, it ensures that every analytical question can be answered, since each fact retains its full context regarding each dimension. Using this level of granularity ensures analytical flexibility and avoids premature aggregation that would cause problems later one if a finer granularity would be required.
