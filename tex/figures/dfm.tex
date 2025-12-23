@@ -126,7 +126,7 @@
 % connection with optionality marker
 \draw[thick] (ws0) -- (wsInd);
 \path (ws0) -- (wsInd) coordinate[pos=0.3] (wsIndOpt);
-\draw[thick] ($(wsIndOpt)+(0,-2.2pt)$) -- ($(wsIndOpt)+(0,2.2pt)$);
+\draw[thick] ($(wsIndOpt)!-2.2pt!90:(wsInd)$) -- ($(wsIndOpt)!2.2pt!90:(wsInd)$);
 
 % geographic region
 \node[attr,above right=1mm and 8mm of ws0] (wsRegion) {};
