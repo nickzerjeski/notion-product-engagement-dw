@@ -132,11 +132,12 @@ ON CONFLICT (event_type, feature_category, interaction_intent) DO NOTHING;
 --     - Tier mix spread evenly; lifecycle varied.
 -- ==========================================================
 INSERT INTO dim_user (
-  user_id_nat, signup_date, subscription_tier,
+  user_id_nat, username, signup_date, subscription_tier,
   user_type, region, lifecycle_stage
 )
 SELECT
   'usr_' || LPAD(i::TEXT, 4, '0') AS user_id_nat,
+  'user_' || LPAD(i::TEXT, 4, '0') AS username,
   (DATE '2024-01-05'
    + (((i-1) / 20) * INTERVAL '1 month')
    + ((i-1) % 20) * INTERVAL '1 day')::date AS signup_date,

@@ -24,6 +24,7 @@ CREATE TABLE IF NOT EXISTS dim_time (
 CREATE TABLE IF NOT EXISTS dim_user (
   user_key           INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
   user_id_nat        VARCHAR(64) NOT NULL UNIQUE,
+  username           VARCHAR(64),
   signup_date        DATE,
   subscription_tier  VARCHAR(32),
   user_type          VARCHAR(32),
