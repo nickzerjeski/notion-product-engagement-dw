@@ -127,17 +127,6 @@ kaq5_date_max = kaq5["year_month"].max()
 app.layout = html.Div(
     className="page",
     children=[
-        html.Div(
-            className="hero",
-            children=[
-                html.H1("Notion Product Engagement Dashboard"),
-                html.P(
-                    "Interactive view of the key analytical results from the warehouse queries, "
-                    "covering subscription tiers, content engagement, activation, device usage, "
-                    "and collaboration patterns."
-                ),
-            ],
-        ),
         dcc.Tabs(
             className="tabs",
             children=[
@@ -913,4 +902,4 @@ def update_overview_growth(_):
 
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(debug=False)
