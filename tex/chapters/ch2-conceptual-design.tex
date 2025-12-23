@@ -62,4 +62,4 @@ To evaluate product usage and engagement effectively, the fact table must also i
 Since we now discussed and defined the dimensions and measures of our Product Usage and Engagement fact, we can start building the Dimensional Fact Model (DFM).
 
 \input{../figures/dfm}
-TODO: Explaining the DFM and why I choose some of the design choices I made
+For the user dimension, we choose \texttt{username} as a descriptive attribute to easily identify users in reports. It is not used in analytical queries. Additionally, we defined \texttt{industry\_segment} as an optional attribute, since it is not always applicable to put workspaces into an industry context, for example for personal workspaces. Finally, we decided to model \texttt{Month}, \texttt{Quater} and \texttt{Year} as a hierarchy in the time dimension to allow for roll-up analysis over different time granularities.
