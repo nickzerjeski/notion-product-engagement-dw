@@ -6,4 +6,4 @@ This is a case study of which concerns with the design and implementation of a D
 To build the report, run `cd tex && pdflatex main.tex`. Note that you need to build the pdf twice in order to have the references rendered correctly.
 
 ## Dashboard
-To start the dashboard, run `python dashboard/app.py`
+Install the requirements with `pip install -r requirements.txt`. To start the dashboard, run `python dashboard/app.py`
